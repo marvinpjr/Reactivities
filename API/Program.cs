@@ -1,22 +1,12 @@
+using API.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 string corsPolicyName = "CorsPolicy";
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-builder.Services.AddDbContext<DataContext>(opt => {
-    opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
-builder.Services.AddCors(opt =>
-{
-    opt.AddPolicy(corsPolicyName, policy =>
-    {
-        policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
-    });
-});
+builder.Services.AddApplicationServices(builder.Configuration, corsPolicyName);
 
 var app = builder.Build();
 
@@ -26,6 +16,7 @@ app.UseCors(corsPolicyName);
 app.UseAuthorization();
 app.MapControllers();
 
+// init database and seed data if it doesn't exist
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 try
